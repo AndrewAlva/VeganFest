@@ -35,16 +35,16 @@ const material = new THREE.ShaderMaterial({
         uNoiseSize: { value: 1 },
         uNoiseFrequency: { value: 9 },
         uNoiseAmplitude: { value: 1.05 },
-        uKaleidoSections: { value: 3 },
+        uKaleidoSections: { value: 2 },
         uAnimation: { value: 0 },
     }
 })
 
-gui.add(material.uniforms.uGridTiles, 'value').min(1).max(51).step(1).name('Grid tiles')
-gui.add(material.uniforms.uNoiseSize, 'value').min(1).max(60).step(1).name('Perlin size')
-gui.add(material.uniforms.uNoiseFrequency, 'value').min(1).max(150).step(1).name('Perlin frequency')
-gui.add(material.uniforms.uNoiseAmplitude, 'value').min(1.05).max(10).step(0.01).name('min frequency')
-gui.add(material.uniforms.uKaleidoSections, 'value').min(3).max(20).step(1).name('Kaleido sections')
+gui.add(material.uniforms.uGridTiles, 'value').min(1).max(51).step(1).name('🔥 tiles')
+gui.add(material.uniforms.uNoiseSize, 'value').min(1).max(60).step(1).name('🔥 size')
+gui.add(material.uniforms.uNoiseFrequency, 'value').min(1).max(150).step(1).name('🔥 frequency')
+gui.add(material.uniforms.uNoiseAmplitude, 'value').min(1.05).max(10).step(0.01).name('🔥 frequency')
+gui.add(material.uniforms.uKaleidoSections, 'value').min(1).max(200).step(1).name('# sections')
 
 // Mesh
 const mesh = new THREE.Mesh(geometry, material)

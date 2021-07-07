@@ -1,5 +1,8 @@
 #define PI 3.1415926535897932384626433832795
+#define PI_0 3.1415926535897932384626433832795
 #define TAU 2.0 * PI
+#define TAU_0 2.0 * PI
+
 
 varying vec2 vUv;
 uniform float uGridTiles;
@@ -12,6 +15,20 @@ uniform float uAnimation;
 #pragma glslify: wixaGrid = require('../fn/wixa-grid.frag');
 #pragma glslify: cnoise = require('../fn/cnoise.frag');
 #pragma glslify: Kaleido = require('../fn/Kaleido.frag');
+
+vec2 getRadialUv(vec2 uv) {
+    float angle = atan(uv.x, uv.y);
+    
+    vec2 radialUv = vec2(0.0);
+    radialUv.x = angle / (PI * 2.) + 0.5;
+    radialUv.x *= uKaleidoSections;
+    radialUv.x = mod(radialUv.x, 1.);
+    radialUv.x = cos(radialUv.x * TAU) * .5 + .5;
+    
+    radialUv.y = length(uv);
+
+    return radialUv;
+}
 
 void main()
 {
@@ -39,11 +56,19 @@ void main()
 
     // Coloured
     vec2 color = vUv * maskedPerlin;
-    // gl_FragColor = vec4(maskedPerlin, color, 1.);
+    gl_FragColor = vec4(maskedPerlin, color, 1.);
 
 
     // Kaleido
     vec2 kalUv = Kaleido((vUv - vec2(0.5)), uKaleidoSections);
 
-    gl_FragColor = vec4(kalUv, 1., 1.);
+    // gl_FragColor = vec4(kalUv, 1., 1.);
+
+
+    // UVs colors: fake kaleido
+    vec2 uv = vUv - 0.5;
+    vec2 radialUv = getRadialUv(uv);
+
+    vec3 angleColor = vec3(radialUv, 1.);
+    gl_FragColor = vec4(angleColor, 1.);
 }
