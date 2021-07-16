@@ -1,7 +1,9 @@
 #define PI 3.1415926535897932384626433832795
 #define PI_0 3.1415926535897932384626433832795
+#define PI_1 3.1415926535897932384626433832795
 #define TAU 2.0 * PI
 #define TAU_0 2.0 * PI
+#define TAU_1 2.0 * PI
 
 
 varying vec2 vUv;
@@ -15,20 +17,8 @@ uniform float uAnimation;
 #pragma glslify: wixaGrid = require('../fn/wixa-grid.frag');
 #pragma glslify: cnoise = require('../fn/cnoise.frag');
 #pragma glslify: Kaleido = require('../fn/Kaleido.frag');
-
-vec2 getRadialUv(vec2 uv) {
-    float angle = atan(uv.x, uv.y);
-    
-    vec2 radialUv = vec2(0.0);
-    radialUv.x = angle / (PI * 2.) + 0.5;
-    radialUv.x *= uKaleidoSections;
-    radialUv.x = mod(radialUv.x, 1.);
-    radialUv.x = cos(radialUv.x * TAU) * .5 + .5;
-    
-    radialUv.y = length(uv);
-
-    return radialUv;
-}
+#pragma glslify: getRadialUv = require('../fn/RadialUv.frag');
+#pragma glslify: range = require('../fn/range.frag');
 
 void main()
 {
@@ -67,8 +57,45 @@ void main()
 
     // UVs colors: fake kaleido
     vec2 uv = vUv - 0.5;
-    vec2 radialUv = getRadialUv(uv);
+    // vec2 uv = vUv - distance(vUv, vec2(.5, .65));
+    vec2 radialUv = getRadialUv(uv, uKaleidoSections, uAnimation * 2.5);
 
+    // vec3 angleColor = vec3(radialUv.x); // b/w test
     vec3 angleColor = vec3(radialUv, 1.);
-    gl_FragColor = vec4(angleColor, 1.);
+    // gl_FragColor = vec4(angleColor, 1.);
+
+
+    vec3 solidTint = vec3(1., .5, .1);
+    // vec3 solidTint = vec3(.6, .21, .91);
+    
+    // Perlin radial uv
+    // float radialPerlin = sin( cnoise(radialUv)  * (sin(uAnimation) * uNoiseFrequency + (uNoiseFrequency + uNoiseAmplitude)));
+    float radialPerlin = sin( cnoise(radialUv * uNoiseSize)  * (sin(uAnimation) * uNoiseFrequency + (uNoiseFrequency + uNoiseAmplitude))); // hook perlin size
+    gl_FragColor = vec4(vec3(radialPerlin), 1.);
+    // gl_FragColor = vec4(radialPerlin * solidTint, 1.);
+    float maskedRadP = ringsGrid * radialPerlin;
+    // gl_FragColor = vec4(vec3(maskedRadP), 1.);
+    // gl_FragColor = vec4(maskedRadP * solidTint, 1.);
+
+    // Map colors
+    // float rangeR = radialPerlin * cnoise(vUv + uAnimation); // perlin color
+    float rangeR = radialPerlin * cnoise(radialUv + uAnimation); // kaleido color
+    // float rangeG = radialPerlin * cnoise(vUv + (uAnimation * 1.2)); // perlin color
+    float rangeG = radialPerlin * cnoise(radialUv + (uAnimation * 1.2)); // kaleido color
+    // float rangeB = radialPerlin * cnoise(vUv + (uAnimation * .05)); // perlin color
+    float rangeB = radialPerlin * cnoise(radialUv + (uAnimation * .05)); // kaleido color
+    vec3 rangeRGB = vec3(rangeR, rangeG, rangeB);
+    // gl_FragColor = vec4(rangeRGB, 1.);
+
+    // gl_FragColor = vec4(maskedRadP * rangeRGB, 1.);
+
+
+    // Sine radial uv
+    // float strength = cos(radialUv.x - radialUv.y);
+    float strength = tan(radialUv.x - radialUv.y) * tan(radialUv.x - radialUv.y) * cos(radialUv.x - radialUv.y);
+    gl_FragColor = vec4(vec3(strength), 1.);
+    gl_FragColor = vec4(strength * solidTint, 1.);
+    gl_FragColor = vec4(strength * (rangeRGB + solidTint), 1.);
+
+    
 }
